@@ -116,7 +116,7 @@ def load_dataset(
     df = pd.read_csv(csv_path)
 
     if verbose:
-        print(f"[preprocess] Loaded {csv_path.name}  →  "
+        print(f"[preprocess] Loaded {csv_path.name}  ->  "
               f"{df.shape[0]} samples, {df.shape[1]} columns")
 
     snp_ids = get_snp_ids(list(df.columns))

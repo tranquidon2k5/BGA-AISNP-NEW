@@ -32,6 +32,7 @@ from catboost               import CatBoostClassifier
 from ngboost                import NGBClassifier
 from ngboost.distns          import k_categorical
 from src.generative_model   import GenerativeBGAModel
+from src.ga_svm_model       import GASVMClassifier
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ ALL_MODEL_NAMES = [
     "CatBoost",
     "NGBoost",
     "GenerativeNaiveBayes",
+    "GA-SVM",
 ]
 
 
@@ -182,6 +184,10 @@ def build_models(n_classes: int) -> dict[str, BaseEstimator]:
             learning_rate=0.05, random_state=RANDOM_STATE,
         ),
         "GenerativeNaiveBayes": GenerativeBGAWrapper(smoothing_alpha=1.0),
+        "GA-SVM": GASVMClassifier(
+            pop_size=50, n_generations=40, tournament_size=3,
+            mutation_prob=0.03, svm_C=10.0, cv_folds=3,
+        ),
     }
 
 
@@ -253,6 +259,11 @@ def get_param_grids(n_classes: int) -> dict[str, dict]:
         },
         "GenerativeNaiveBayes": {
             "smoothing_alpha": loguniform(0.1, 10),
+        },
+        "GA-SVM": {
+            "svm_C": loguniform(0.1, 100),
+            "mutation_prob": uniform(0.01, 0.09),
+            "n_generations": randint(20, 60),
         },
     }
 

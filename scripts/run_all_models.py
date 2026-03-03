@@ -41,6 +41,32 @@ try:
 except ImportError:
     HAS_MLP_GEO = False
 
+from src.ga_svm_model import GASVMClassifier
+
+try:
+    from src.svd_mlp_adv_model import SVDMLPAdvClassifier
+    HAS_SVD_MLP = True
+except ImportError:
+    HAS_SVD_MLP = False
+
+try:
+    from src.diet_networks_model import DietNetworkClassifier
+    HAS_DIET = True
+except ImportError:
+    HAS_DIET = False
+
+try:
+    from src.popvae_model import PopVAEClassifier
+    HAS_POPVAE = True
+except ImportError:
+    HAS_POPVAE = False
+
+try:
+    from src.federated_mlp_model import FederatedMLPClassifier
+    HAS_FED = True
+except ImportError:
+    HAS_FED = False
+
 
 DATA_CONT_PATH = os.path.join("data", "AISNP_by_sample_continental.csv")
 DATA_EAS_PATH = os.path.join("data", "AISNP_by_sample_eastasian.csv")
@@ -283,6 +309,156 @@ def evaluate_mlp_geo(
     )
 
 
+def evaluate_ga_svm(
+    dataset: str,
+    class_names: List[str],
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train_enc: np.ndarray,
+    y_test_enc: np.ndarray,
+    snp_names: List[str],
+) -> Dict[str, float]:
+    model = GASVMClassifier(
+        pop_size=50, n_generations=40, tournament_size=3, mutation_prob=0.03,
+    )
+    model.fit(X_train, y_train_enc, snp_names=snp_names)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+
+    plot_path = os.path.join(
+        PLOTS_DIR, f"{slugify(dataset)}_ga_svm_confusion.png"
+    )
+    return compute_metrics(
+        method="GA-SVM",
+        dataset=dataset,
+        class_names=class_names,
+        y_true=y_test_enc,
+        y_pred=y_pred,
+        y_proba=y_proba,
+        plot_path=plot_path,
+    )
+
+
+def evaluate_svd_mlp_adv(
+    dataset: str,
+    class_names: List[str],
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train_enc: np.ndarray,
+    y_test_enc: np.ndarray,
+) -> Dict[str, float]:
+    model = SVDMLPAdvClassifier(
+        n_components=20, hidden_sizes=(128, 64),
+        epsilon=0.05, alpha=0.3, epochs=200, patience=20,
+    )
+    model.fit(X_train, y_train_enc)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+
+    plot_path = os.path.join(
+        PLOTS_DIR, f"{slugify(dataset)}_svd_mlp_adv_confusion.png"
+    )
+    return compute_metrics(
+        method="SVD-MLP-Adv",
+        dataset=dataset,
+        class_names=class_names,
+        y_true=y_test_enc,
+        y_pred=y_pred,
+        y_proba=y_proba,
+        plot_path=plot_path,
+    )
+
+
+def evaluate_diet_networks(
+    dataset: str,
+    class_names: List[str],
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train_enc: np.ndarray,
+    y_test_enc: np.ndarray,
+) -> Dict[str, float]:
+    model = DietNetworkClassifier(
+        embed_dim=64, aux_hidden=64, clf_hidden=32,
+        epochs=200, patience=20,
+    )
+    model.fit(X_train, y_train_enc)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+
+    plot_path = os.path.join(
+        PLOTS_DIR, f"{slugify(dataset)}_diet_networks_confusion.png"
+    )
+    return compute_metrics(
+        method="DietNetworks",
+        dataset=dataset,
+        class_names=class_names,
+        y_true=y_test_enc,
+        y_pred=y_pred,
+        y_proba=y_proba,
+        plot_path=plot_path,
+    )
+
+
+def evaluate_popvae(
+    dataset: str,
+    class_names: List[str],
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train_enc: np.ndarray,
+    y_test_enc: np.ndarray,
+) -> Dict[str, float]:
+    model = PopVAEClassifier(
+        latent_dim=10, enc_hidden=(128, 64),
+        beta=1.0, gamma=10.0, epochs=200, patience=20,
+    )
+    model.fit(X_train, y_train_enc)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+
+    plot_path = os.path.join(
+        PLOTS_DIR, f"{slugify(dataset)}_popvae_confusion.png"
+    )
+    return compute_metrics(
+        method="popVAE",
+        dataset=dataset,
+        class_names=class_names,
+        y_true=y_test_enc,
+        y_pred=y_pred,
+        y_proba=y_proba,
+        plot_path=plot_path,
+    )
+
+
+def evaluate_federated_mlp(
+    dataset: str,
+    class_names: List[str],
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train_enc: np.ndarray,
+    y_test_enc: np.ndarray,
+) -> Dict[str, float]:
+    model = FederatedMLPClassifier(
+        n_clients=5, hidden_sizes=(128, 64),
+        n_rounds=20, local_epochs=5, patience=8,
+    )
+    model.fit(X_train, y_train_enc)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)
+
+    plot_path = os.path.join(
+        PLOTS_DIR, f"{slugify(dataset)}_federated_mlp_confusion.png"
+    )
+    return compute_metrics(
+        method="FederatedMLP",
+        dataset=dataset,
+        class_names=class_names,
+        y_true=y_test_enc,
+        y_pred=y_pred,
+        y_proba=y_proba,
+        plot_path=plot_path,
+    )
+
+
 def run_dataset(
     dataset_name: str,
     loader: Callable[[str], pd.DataFrame],
@@ -377,6 +553,94 @@ def run_dataset(
             print(f"[WARN] MLP-Geo skipped for {dataset_name}: {e}")
     else:
         print(f"[WARN] MLP-Geo skipped for {dataset_name}: PyTorch not installed")
+
+    # GA-SVM
+    try:
+        results.append(
+            evaluate_ga_svm(
+                dataset=dataset_name,
+                class_names=class_names,
+                X_train=X_train,
+                X_test=X_test,
+                y_train_enc=y_train_enc,
+                y_test_enc=y_test_enc,
+                snp_names=snp_names,
+            )
+        )
+    except Exception as e:
+        print(f"[WARN] GA-SVM skipped for {dataset_name}: {e}")
+
+    # SVD-MLP-Adv
+    if HAS_SVD_MLP:
+        try:
+            results.append(
+                evaluate_svd_mlp_adv(
+                    dataset=dataset_name,
+                    class_names=class_names,
+                    X_train=X_train,
+                    X_test=X_test,
+                    y_train_enc=y_train_enc,
+                    y_test_enc=y_test_enc,
+                )
+            )
+        except Exception as e:
+            print(f"[WARN] SVD-MLP-Adv skipped for {dataset_name}: {e}")
+    else:
+        print(f"[WARN] SVD-MLP-Adv skipped for {dataset_name}: PyTorch not installed")
+
+    # Diet Networks
+    if HAS_DIET:
+        try:
+            results.append(
+                evaluate_diet_networks(
+                    dataset=dataset_name,
+                    class_names=class_names,
+                    X_train=X_train,
+                    X_test=X_test,
+                    y_train_enc=y_train_enc,
+                    y_test_enc=y_test_enc,
+                )
+            )
+        except Exception as e:
+            print(f"[WARN] DietNetworks skipped for {dataset_name}: {e}")
+    else:
+        print(f"[WARN] DietNetworks skipped for {dataset_name}: PyTorch not installed")
+
+    # popVAE
+    if HAS_POPVAE:
+        try:
+            results.append(
+                evaluate_popvae(
+                    dataset=dataset_name,
+                    class_names=class_names,
+                    X_train=X_train,
+                    X_test=X_test,
+                    y_train_enc=y_train_enc,
+                    y_test_enc=y_test_enc,
+                )
+            )
+        except Exception as e:
+            print(f"[WARN] popVAE skipped for {dataset_name}: {e}")
+    else:
+        print(f"[WARN] popVAE skipped for {dataset_name}: PyTorch not installed")
+
+    # Federated MLP
+    if HAS_FED:
+        try:
+            results.append(
+                evaluate_federated_mlp(
+                    dataset=dataset_name,
+                    class_names=class_names,
+                    X_train=X_train,
+                    X_test=X_test,
+                    y_train_enc=y_train_enc,
+                    y_test_enc=y_test_enc,
+                )
+            )
+        except Exception as e:
+            print(f"[WARN] FederatedMLP skipped for {dataset_name}: {e}")
+    else:
+        print(f"[WARN] FederatedMLP skipped for {dataset_name}: PyTorch not installed")
 
     return results
 
