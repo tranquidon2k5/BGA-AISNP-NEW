@@ -29,3 +29,6 @@ scripts/catboost_info/
 # Temp / lock files
 *.lock
 ~$*
+
+# Claude Code local settings
+.claude/
