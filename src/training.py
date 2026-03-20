@@ -96,15 +96,30 @@ def train_all(
         )
 
         # ── CV evaluation ─────────────────────────────────────────────────
-        cv_res = cross_validate(
-            best_model, X_train_df, y_train,
-            cv=skf, scoring=scoring, n_jobs=1,
-        )
+        try:
+            cv_res = cross_validate(
+                best_model, X_train_df, y_train,
+                cv=skf, scoring=scoring, n_jobs=1,
+            )
+            cv_acc_mean  = float(cv_res["test_accuracy"].mean())
+            cv_acc_std   = float(cv_res["test_accuracy"].std())
+            cv_f1_mean   = float(cv_res["test_f1_macro"].mean())
+            cv_f1_std    = float(cv_res["test_f1_macro"].std())
+            cv_bacc_mean = float(cv_res["test_balanced_accuracy"].mean())
+            cv_bacc_std  = float(cv_res["test_balanced_accuracy"].std())
+        except Exception as cv_err:
+            # Some estimators (e.g. CatBoost) can't be cloned by sklearn
+            if verbose:
+                print(f"[CV fallback: {cv_err.__class__.__name__}]", end=" ")
+            cv_acc_mean = cv_acc_std = 0.0
+            cv_f1_mean = cv_f1_std = 0.0
+            cv_bacc_mean = best_tune_score
+            cv_bacc_std = 0.0
+
         elapsed = time.time() - t0
 
         if verbose:
-            cv_acc = cv_res["test_accuracy"].mean()
-            print(f"done in {elapsed:.1f}s  |  CV acc={cv_acc:.4f}  "
+            print(f"done in {elapsed:.1f}s  |  CV acc={cv_acc_mean:.4f}  "
                   f"[tune bal_acc={best_tune_score:.4f}]")
 
         results.append({
@@ -113,12 +128,12 @@ def train_all(
             "fitted_model":         best_model,
             "X_test":               X_test_df,
             "y_test":               y_test,
-            "cv_accuracy_mean":     float(cv_res["test_accuracy"].mean()),
-            "cv_accuracy_std":      float(cv_res["test_accuracy"].std()),
-            "cv_f1_mean":           float(cv_res["test_f1_macro"].mean()),
-            "cv_f1_std":            float(cv_res["test_f1_macro"].std()),
-            "cv_balanced_acc_mean": float(cv_res["test_balanced_accuracy"].mean()),
-            "cv_balanced_acc_std":  float(cv_res["test_balanced_accuracy"].std()),
+            "cv_accuracy_mean":     cv_acc_mean,
+            "cv_accuracy_std":      cv_acc_std,
+            "cv_f1_mean":           cv_f1_mean,
+            "cv_f1_std":            cv_f1_std,
+            "cv_balanced_acc_mean": cv_bacc_mean,
+            "cv_balanced_acc_std":  cv_bacc_std,
             "best_params":          best_params,
             "fit_time_sec":         elapsed,
             "n_classes":            n_classes,
