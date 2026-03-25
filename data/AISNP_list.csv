@@ -1,0 +1,59 @@
+﻿No.;AISNP;Allele 1;Allele 2;chromosome;Ancestry-specific locus
+1;rs1288367;T;C;1;East Asian-specific locus
+2;rs7554936;C;T;1;continental-specific locus
+3;rs79200067;G;A;1;East Asian-specific locus
+4;rs10497191;T;C;2;continental-specific locus
+5;rs1250233;G;A;2;continental-specific locus
+6;rs1371048;G;T;2;continental-specific locus
+7;rs17034666;G;A;2;continental-specific locus
+8;rs4907251;C;T;2;continental-specific locus
+9;rs7596027;T;C;2;East Asian-specific locus
+10;rs116783706;C;T;3;East Asian-specific locus
+11;rs12498138;G;A;3;continental-specific locus
+12;rs149768401;G;C;3;East Asian-specific locus
+13;rs17005847;C;G;3;East Asian-specific locus
+14;rs2072053;C;T;3;continental-specific locus
+15;rs570435573;G;T;3;East Asian-specific locus
+16;rs6548616;T;C;3;continental-specific locus
+17;rs10008492;C;T;4;continental-specific locus
+18;rs1229984;T;C;4;continental-specific locus
+19;rs546642722;G;A;4;East Asian-specific locus
+20;rs17207681;A;G;5;East Asian-specific locus
+21;rs17451739;C;T;5;East Asian-specific locus
+22;rs17599827;A;C;5;East Asian-specific locus
+23;rs28777;C;A;5;continental-specific locus
+24;rs4704322;C;T;5;continental-specific locus
+25;rs2261033;A;G;6;East Asian-specific locus
+26;rs2442728;G;T;6;East Asian-specific locus
+27;rs2571389;T;C;6;East Asian-specific locus
+28;rs535319466;C;G;6;East Asian-specific locus
+29;rs2717329;G;A;7;continental-specific locus
+30;rs6969817;G;T;7;East Asian-specific locus
+31;rs7799912;G;C;7;East Asian-specific locus
+32;rs2920295;A;G;8;East Asian-specific locus
+33;rs12006467;T;C;9;East Asian-specific locus
+34;rs534029120;C;G;9;East Asian-specific locus
+35;rs10741584;G;A;11;continental-specific locus
+36;rs11034709;A;G;11;East Asian-specific locus
+37;rs11224765;C;T;11;East Asian-specific locus
+38;rs174570;C;T;11;East Asian-specific locus
+39;rs575377;A;C;11;continental-specific locus
+40;rs11104947;G;A;12;East Asian-specific locus
+41;rs3217805;C;G;12;East Asian-specific locus
+42;rs3809161;A;G;12;East Asian-specific locus
+43;rs9522149;T;C;13;continental-specific locus
+44;rs11629323;C;G;14;East Asian-specific locus
+45;rs12913832;A;G;15;continental-specific locus
+46;rs2470102;A;G;15;continental-specific locus
+47;rs513265;A;C;15;continental-specific locus
+48;rs728404;C;T;15;continental-specific locus
+49;rs17822931;C;T;16;East Asian-specific locus
+50;rs543086096;G;A;16;East Asian-specific locus
+51;rs11652805;C;T;17;continental-specific locus
+52;rs2642066;G;T;17;East Asian-specific locus
+53;rs8072587;C;G;17;continental-specific locus
+54;rs434124;C;G;19;East Asian-specific locus
+55;rs6123723;C;T;20;East Asian-specific locus
+56;rs239031;G;A;21;continental-specific locus
+57;rs464165;C;T;21;East Asian-specific locus
+58;rs530357165;G;A;21;East Asian-specific locus

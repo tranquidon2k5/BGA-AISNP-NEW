@@ -34,6 +34,42 @@ from ngboost.distns          import k_categorical
 from src.generative_model   import GenerativeBGAModel
 from src.ga_svm_model       import GASVMClassifier
 
+try:
+    from src.tabpfn_model import make_tabpfn_classifier
+    HAS_TABPFN = True
+except ImportError:
+    HAS_TABPFN = False
+
+try:
+    from src.freeform_model import FreeformBGAClassifier
+    HAS_FREEFORM = True
+except ImportError:
+    HAS_FREEFORM = False
+
+try:
+    from src.svd_mlp_adv_model import SVDMLPAdvClassifier
+    HAS_SVD_MLP = True
+except ImportError:
+    HAS_SVD_MLP = False
+
+try:
+    from src.diet_networks_model import DietNetworkClassifier
+    HAS_DIET = True
+except ImportError:
+    HAS_DIET = False
+
+try:
+    from src.popvae_model import PopVAEClassifier
+    HAS_POPVAE = True
+except ImportError:
+    HAS_POPVAE = False
+
+try:
+    from src.federated_mlp_model import FederatedMLPClassifier
+    HAS_FED = True
+except ImportError:
+    HAS_FED = False
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants
@@ -56,6 +92,20 @@ ALL_MODEL_NAMES = [
     "GenerativeNaiveBayes",
     "GA-SVM",
 ]
+
+# Conditionally add optional models
+if HAS_TABPFN:
+    ALL_MODEL_NAMES.append("TabPFN")
+if HAS_FREEFORM:
+    ALL_MODEL_NAMES.append("FREEFORM")
+if HAS_SVD_MLP:
+    ALL_MODEL_NAMES.append("SVD-MLP-Adv")
+if HAS_DIET:
+    ALL_MODEL_NAMES.append("DietNetworks")
+if HAS_POPVAE:
+    ALL_MODEL_NAMES.append("popVAE")
+if HAS_FED:
+    ALL_MODEL_NAMES.append("FederatedMLP")
 
 
 def list_available_models() -> list[str]:
@@ -151,7 +201,7 @@ def build_models(n_classes: int) -> dict[str, BaseEstimator]:
     2. Add a key-value entry below with sensible defaults.
     3. Add corresponding param grid in get_param_grids().
     """
-    return {
+    models = {
         "LogisticRegression": Pipeline([
             ("scaler", StandardScaler()),
             ("clf", LogisticRegression(
@@ -189,6 +239,36 @@ def build_models(n_classes: int) -> dict[str, BaseEstimator]:
             mutation_prob=0.03, svm_C=10.0, cv_folds=3,
         ),
     }
+
+    # Optional models
+    if HAS_TABPFN:
+        models["TabPFN"] = make_tabpfn_classifier(device="cpu")
+    if HAS_FREEFORM:
+        models["FREEFORM"] = FreeformBGAClassifier(top_k=15, n_interaction_pairs=45)
+
+    # Deep learning models (conditional on PyTorch availability)
+    if HAS_SVD_MLP:
+        models["SVD-MLP-Adv"] = SVDMLPAdvClassifier(
+            n_components=20, hidden_sizes=(128, 64),
+            epsilon=0.05, alpha=0.3, epochs=200, patience=20,
+        )
+    if HAS_DIET:
+        models["DietNetworks"] = DietNetworkClassifier(
+            embed_dim=64, aux_hidden=64, clf_hidden=32,
+            epochs=200, patience=20,
+        )
+    if HAS_POPVAE:
+        models["popVAE"] = PopVAEClassifier(
+            latent_dim=10, enc_hidden=(128, 64),
+            beta=1.0, gamma=10.0, epochs=200, patience=20,
+        )
+    if HAS_FED:
+        models["FederatedMLP"] = FederatedMLPClassifier(
+            n_clients=5, hidden_sizes=(128, 64),
+            n_rounds=20, local_epochs=5, patience=8,
+        )
+
+    return models
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -265,6 +345,13 @@ def get_param_grids(n_classes: int) -> dict[str, dict]:
             "mutation_prob": uniform(0.01, 0.09),
             "n_generations": randint(20, 60),
         },
+        # Models with no tuning (empty grid) — only CV evaluation
+        "TabPFN":        {},
+        "FREEFORM":      {},
+        "SVD-MLP-Adv":   {},
+        "DietNetworks":  {},
+        "popVAE":        {},
+        "FederatedMLP":  {},
     }
 
 
@@ -287,6 +374,12 @@ def tune_model(
     Returns (best_estimator, best_params, best_cv_score).
     Falls back to base_model.fit() if tuning fails.
     """
+    if not param_dist:
+        if verbose:
+            print(f"[no tuning grid]", end=" ")
+        base_model.fit(X_train, y_train)
+        return base_model, {}, 0.0
+
     if cv is None:
         cv = StratifiedKFold(n_splits=CV_FOLDS, shuffle=True,
                              random_state=RANDOM_STATE)
