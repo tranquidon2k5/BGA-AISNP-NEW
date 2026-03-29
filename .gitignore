@@ -32,3 +32,8 @@ scripts/catboost_info/
 
 # Claude Code local settings
 .claude/
+
+main.tex
+main.pdf
+main.aux
+main.log
